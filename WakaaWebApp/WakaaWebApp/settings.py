@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,8 +53,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Ajoutez l'URL de votre application React
+]
+
+CORS_ALLOW_ALL_ORIGINS : True
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'WakaaWebApp.urls'
 
@@ -78,13 +86,6 @@ STATICFILES_DIRS = [
 ]
 
 WSGI_APPLICATION = 'WakaaWebApp.wsgi.application'
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Ajoutez l'URL de votre application React
-]
-
-CORS_ALLOW_CREDENTIALS = True
-
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Carousel, Button, Dropdown, Form, DropdownButton, FormGroup } from 'react-bootstrap';
 import '../../assets/css/AdminLoginPage.css';
+import { useNavigate } from 'react-router-dom';
 
 const AdminLoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const [carousel, setCarousel] = useState({
         title: "",
         description: "",
     });
     const [rememberMe, setRememberMe] = useState(false);
 
+    const history = useNavigate();
+
     const handleLogin = async(e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setErrorMessage('');
         // Logique pour gérer la connexion
         try{
             // Envoyer les données d'authentification au backend Django
-            const response = await fetch('http://localhost:8000/administration/login', {
+            const response = await fetch('http://localhost:8000/api/users/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -29,14 +36,25 @@ const AdminLoginPage = () => {
             });
 
             if(response.ok) {
-                // Connexion réussie, rediriger l'utilisateur ou effectuer d'autres actions nécessaires
-                console.log('Connexion Réussie !');
+              const userData = await response.json();
+
+              // Vérifier si l'utilisateur est un superadministrateur uniquement
+              if (userData.role === "superadmin") {
+                const user_id = userData.id;
+                const user_email = userData.email;
+                history(`/administration?${user_id}:${user_email}/dashboard`);
+              } else {
+                console.log('Vous n\'avez pas les droits suffisants pour accéder à cette interface');
+                history(`/administration/login`);
+              }
             } else {
                 // Gérer les erreurs d'authentification ici
                 console.error("Echec de la connexion");
             }
         } catch (error) {
             console.error('Erreur lors de la connexion', error);
+        } finally {
+          setIsLoading(false);
         }
     };
 
@@ -98,10 +116,21 @@ const AdminLoginPage = () => {
                         style={{textAlign:"left"}}
                 />
               </Form.Group>
-  
-                <Button variant="primary" type="submit" onClick={handleLogin} className='submit'>
-                  Sign in
+
+              {isLoading ? (
+                // Afficher le spinner pendant le chargement
+                <Button variant='primary' type='submit' className='submit' disabled>
+                  <span className='spinner-border spinner-border-sm' role='status' aria-hidden="true"></span>
+                  {' '}Connexion...
                 </Button>
+              ) : (
+                // Afficher le texte normal lorsque le chargement n'est pas encours
+                <Button variant='primary' type='submit' className='submit' onClick={handleLogin}>
+                  Sign In
+                </Button>
+              )}
+
+              {errorMessage && <p className='error-message'>{errorMessage}</p>}
                 <hr />
               </form>
             </main>

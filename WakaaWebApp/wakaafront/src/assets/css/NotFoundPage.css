@@ -1,0 +1,51 @@
+.not-found-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.inactive-text {
+    color: rgba(0, 0, 0, 0.2); /* Couleur grise pour le texte inactif */
+    font-size: 500px;
+    font-family: "Segoe UI light";
+}
+.inactive-text :hover{
+    transform: rotate(360deg);
+}
+
+.emoji {
+    font-size: 25rem; /* Ajustez la taille de l'émoji en fonction de vos préférences */
+}
+
+/* Ajoutez une animation bounce pour le texte "404" */
+@keyframes wobble {
+    100%, 70%, 50%, 80%, 100% {
+        transform: translateY(30px);
+    }
+    40% {
+        transform: translateY(-30px);
+    }
+    60% {
+        transform: translateY(-15px);
+    }
+}
+
+.wobble {
+    animation: wobble 5s infinite; /* Ajustez la durée et les propriétés de l'animation selon vos préférences */
+}
+
+.rotate-letters {
+    display: inline-block;
+    overflow: hidden;
+}
+
+.rotate-letters span {
+    display: inline-block;
+    transition: transform 0.5s ease-in-out;
+}
+
+.rotate-letters:hover span {
+    transform: rotate(360deg);
+}

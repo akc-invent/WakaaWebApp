@@ -13,7 +13,8 @@ class EntrepriseSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = '__all__'
+        fields = ['id', 'username', 'email', 'role', 'role_agence', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
 
 # Serialiser pour les Agences
 class AgenceSerializer(serializers.ModelSerializer):

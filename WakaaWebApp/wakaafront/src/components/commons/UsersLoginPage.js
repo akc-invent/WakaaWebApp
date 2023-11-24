@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Carousel, Button, Dropdown, Form, DropdownButton, FormGroup } from 'react-bootstrap';
 import '../../assets/css/AdminLoginPage.css';
+import { useNavigate } from 'react-router-dom';
 
 const UserLoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const [carousel, setCarousel] = useState({
         title: "",
         description: "",
     });
     const [rememberMe, setRememberMe] = useState(false);
 
+    const history = useNavigate();
+
     const handleLogin = async(e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setErrorMessage('');
         // Logique pour gérer la connexion
         try{
             // Envoyer les données d'authentification au backend Django
@@ -24,19 +31,49 @@ const UserLoginPage = () => {
                 body: JSON.stringify({
                     email,
                     password,
-                    rememberMe,
                 }),
             });
 
-            if(response.ok) {
-                // Connexion réussie, rediriger l'utilisateur ou effectuer d'autres actions nécessaires
-                console.log('Connexion Réussie !');
+            if( response.ok ) {
+              const userData = await response.json();
+
+              // Vérifier si l'utilisateur est un administrateur d'entreprise
+              if( userData.role === 'admin-entreprise' ) {
+                // S'il est un admin d'entreprise, récupérer l'entreprise dans laquelle il travaille
+                const userEntreprise = userData.entreprise;
+                if ( userData.role_agence === 'gestion_flotte' ) {
+                  // Rediriger vers le dashboard de gestion de la flotte de l'entreprise
+                  console.log('Redirection vers la flotte de l\'entreprise ' + userEntreprise);
+                  history(`/entreprises/${userEntreprise}/fleet-dashboard`);
+
+                } else if( userData.role_agence === 'maintenance_vehicules' ) {
+                  // rediriger vers le dashboard de gestion de la maintenance des bus
+                  console.log('Redirection vers la maintenance de l\'entreprise ' + userEntreprise);
+                  history(`/entreprises/${userEntreprise}/maintenance-dashboard`);
+
+                } else if( userData.role_agence === 'manager' ) {
+                  // Rediriger vers le dashboard global de l'entreprise
+                  console.log('Redirection vers l\'entreprise ' + userEntreprise);
+                  history(`/entreprises/${userEntreprise}/dashboard`);
+                } else {
+                  // Aucuns droits spécifiés
+                  console.log('Aucun rôle attribué à l\'utilisateur');
+                }
+
+                console.log('Connexion réussie !');
+              } else {
+                console.error('L\'utilisateur n\'est pas un administrateur d\'entreprises');
+              }
+            } else if( response.status === 401 ){
+                console.error('Email ou mot de passe incorrect');
+                setErrorMessage('Email ou mot de passe incorrect');
             } else {
-                // Gérer les erreurs d'authentification ici
-                console.error("Echec de la connexion");
+              console.error('Erreur lors de la connexion');
             }
         } catch (error) {
             console.error('Erreur lors de la connexion', error);
+        } finally {
+          setIsLoading(false);
         }
     };
 
@@ -146,10 +183,21 @@ const UserLoginPage = () => {
                         style={{textAlign:"left"}}
                 />
               </Form.Group>
-  
-                <Button variant="primary" type="submit" onClick={handleLogin} className='submit'>
-                  Sign in
+
+              {isLoading ? (
+                // Afficher le spinner pendant le chargement
+                <Button variant='primary' type='submit' className='submit' disabled>
+                  <span className='spinner-border spinner-border-sm' role='status' aria-hidden="true"></span>
+                  {' '}Connexion...
                 </Button>
+              ) : (
+                // Afficher le texte normal lorsque le chargement n'est pas encours
+                <Button variant='primary' type='submit' className='submit' onClick={handleLogin}>
+                  Sign In
+                </Button>
+              )}
+
+              {errorMessage && <p className='error-message'>{errorMessage}</p>}
                 <hr />
               </form>
             </main>
